@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dinstone.registry.zookeeper;
+package com.dinstone.clutch.zookeeper;
 
 import com.dinstone.clutch.ServiceDescription;
 import com.dinstone.clutch.zookeeper.ZookeeperRegistryConfig;
