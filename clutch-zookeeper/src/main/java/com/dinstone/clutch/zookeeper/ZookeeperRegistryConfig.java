@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.dinstone.clutch.zookeeper;
 
 import com.dinstone.clutch.RegistryConfig;
 
 public class ZookeeperRegistryConfig extends RegistryConfig {
 
-    private static final String DEFAULT_BASE_PATH = "/registry/dsrd";
+    private static final String DEFAULT_BASE_PATH = "/clutch/registry/";
 
-    private static final String DSRD_BASE_PATH = "dsrd.base.path";
+    private static final String REGISTRY_BASE_PATH = "registry.base.path";
 
     private static final String RETRY_MAX_COUNT = "retry.max.count";
 
@@ -64,11 +65,11 @@ public class ZookeeperRegistryConfig extends RegistryConfig {
     }
 
     public String getBasePath() {
-        return get(DSRD_BASE_PATH, DEFAULT_BASE_PATH);
+        return get(REGISTRY_BASE_PATH, DEFAULT_BASE_PATH);
     }
 
     public ZookeeperRegistryConfig setBasePath(String basePath) {
-        set(DSRD_BASE_PATH, basePath);
+        set(REGISTRY_BASE_PATH, basePath);
         return this;
     }
 
