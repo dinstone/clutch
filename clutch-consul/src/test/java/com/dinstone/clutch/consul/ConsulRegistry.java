@@ -26,7 +26,7 @@ import com.ecwid.consul.v1.health.model.HealthService;
 public class ConsulRegistry {
 
     public static void main(String[] args) {
-        ConsulClient client = new ConsulClient("182.92.5.75", 8500);
+        ConsulClient client = new ConsulClient("127.0.0.1", 8500);
         client.agentServiceDeregister("myapp_01");
         client.agentServiceDeregister("service-provider-1");
         client.agentServiceDeregister("service-provider-1508226803226");

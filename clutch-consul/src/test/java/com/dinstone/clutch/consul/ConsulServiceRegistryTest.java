@@ -28,8 +28,7 @@ public class ConsulServiceRegistryTest {
         description.setHost("localhost");
         description.setPort(80);
 
-        ConsulRegistryConfig config = new ConsulRegistryConfig().setAgentHost("182.92.5.75").setAgentPort(8500);
-        // ConsulRegistryConfig config = new ConsulRegistryConfig().setAgentHost("127.0.0.1").setAgentPort(8500);
+        ConsulRegistryConfig config = new ConsulRegistryConfig().setAgentHost("127.0.0.1").setAgentPort(8500);
         ConsulServiceRegistry registry = new ConsulServiceRegistry(config);
         try {
             registry.register(description);

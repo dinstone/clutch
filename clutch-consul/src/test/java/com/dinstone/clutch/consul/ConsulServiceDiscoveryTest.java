@@ -23,7 +23,7 @@ import com.dinstone.clutch.ServiceDescription;
 public class ConsulServiceDiscoveryTest {
 
     public static void main(String[] args) {
-        ConsulRegistryConfig config = new ConsulRegistryConfig().setAgentHost("123.57.150.93").setAgentPort(8500);
+        ConsulRegistryConfig config = new ConsulRegistryConfig().setAgentHost("127.0.0.1").setAgentPort(8500);
 
         ConsulServiceDiscovery discovery = new ConsulServiceDiscovery(config);
         ServiceDescription description = new ServiceDescription();

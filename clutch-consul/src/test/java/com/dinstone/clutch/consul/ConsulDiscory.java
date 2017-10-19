@@ -24,7 +24,7 @@ import com.ecwid.consul.v1.health.model.HealthService;
 public class ConsulDiscory {
 
     public static void main(String[] args) {
-        ConsulClient client = new ConsulClient("123.57.150.93", 8500);
+        ConsulClient client = new ConsulClient("127.0.0.1", 8500);
         List<HealthService> healthServices = client.getHealthServices("myapp", true, null).getValue();
         for (HealthService healthService : healthServices) {
             System.out.println(healthService.getService());
