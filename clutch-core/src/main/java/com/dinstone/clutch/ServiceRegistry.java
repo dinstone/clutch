@@ -34,14 +34,14 @@ public interface ServiceRegistry {
     public void register(ServiceDescription service) throws Exception;
 
     /**
-     * Unregister / Remove a service instance
+     * Deregister / Remove a service instance
      * 
      * @param service
      *        the service instance description
      * @throws Exception
      *         errors
      */
-    public void unregister(ServiceDescription service) throws Exception;
+    public void deregister(ServiceDescription service) throws Exception;
 
     /**
      * resource release

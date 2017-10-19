@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.dinstone.clutch.zookeeper;
 
 import java.io.IOException;
@@ -119,7 +120,7 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
     @Override
     public void cancel(ServiceDescription description) {
         ServiceCache serviceCache = serviceCacheMap.get(description.getName());
-        if (serviceCache != null) {
+        if (serviceCache != null && serviceCache.removeConsumer(description) <= 0) {
             serviceCache.destroy();
             serviceCacheMap.remove(description.getName());
         }
@@ -190,11 +191,11 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
 
         private final ConcurrentHashMap<String, ServiceDescription> consumers = new ConcurrentHashMap<String, ServiceDescription>();
 
-        private PathChildrenCache cache;
+        private PathChildrenCache pathCache;
 
         public ServiceCache(CuratorFramework client, String name, ThreadFactory threadFactory) {
-            cache = new PathChildrenCache(client, name, true, threadFactory);
-            cache.getListenable().addListener(this);
+            pathCache = new PathChildrenCache(client, name, true, threadFactory);
+            pathCache.getListenable().addListener(this);
         }
 
         public Collection<ServiceDescription> getProviders() {
@@ -202,19 +203,19 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
         }
 
         public ServiceCache build() throws Exception {
-            cache.start(StartMode.BUILD_INITIAL_CACHE);
+            pathCache.start(StartMode.BUILD_INITIAL_CACHE);
             // init cache data
-            for (ChildData childData : cache.getCurrentData()) {
+            for (ChildData childData : pathCache.getCurrentData()) {
                 addProvider(childData, true);
             }
 
             return this;
         }
 
-        public void addConsumer(ServiceDescription service) throws Exception {
+        public int addConsumer(ServiceDescription service) throws Exception {
             synchronized (consumers) {
                 if (consumers.containsKey(service.getId())) {
-                    return;
+                    return consumers.size();
                 }
 
                 service.setRtime(System.currentTimeMillis());
@@ -234,6 +235,16 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
                 }
 
                 consumers.put(service.getId(), service);
+
+                return consumers.size();
+            }
+        }
+
+        public int removeConsumer(ServiceDescription service) {
+            synchronized (consumers) {
+                consumers.remove(service.getId());
+
+                return consumers.size();
             }
         }
 
@@ -245,7 +256,7 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
             } else {
                 providers.put(instanceId, serviceInstance);
             }
-            cache.clearDataBytes(childData.getPath(), childData.getStat().getVersion());
+            pathCache.clearDataBytes(childData.getPath(), childData.getStat().getVersion());
         }
 
         @Override
@@ -277,9 +288,9 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
                 }
             }
 
-            cache.getListenable().removeListener(this);
+            pathCache.getListenable().removeListener(this);
             try {
-                cache.close();
+                pathCache.close();
             } catch (IOException e) {
             }
         }

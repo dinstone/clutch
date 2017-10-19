@@ -196,6 +196,7 @@
 	<modules>
 		<module>clutch-core</module>
 		<module>clutch-zookeeper</module>
+		<module>clutch-consul</module>
 	</modules>
 	<name>clutch</name>
 </project>

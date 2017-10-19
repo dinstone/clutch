@@ -95,7 +95,7 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
     }
 
     @Override
-    public void unregister(ServiceDescription service) throws Exception {
+    public void deregister(ServiceDescription service) throws Exception {
         String path = pathForProvider(service.getName(), service.getId());
         try {
             client.delete().forPath(path);
