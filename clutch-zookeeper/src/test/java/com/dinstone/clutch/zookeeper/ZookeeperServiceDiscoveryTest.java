@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014~2017 dinstone<dinstone@163.com>
+ * Copyright (C) 2014~2020 dinstone<dinstone@163.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package com.dinstone.clutch.zookeeper;
 import java.util.List;
 
 import com.dinstone.clutch.ServiceDescription;
-import com.dinstone.clutch.zookeeper.ZookeeperRegistryConfig;
-import com.dinstone.clutch.zookeeper.ZookeeperServiceDiscovery;
 
 public class ZookeeperServiceDiscoveryTest {
 
@@ -31,7 +29,7 @@ public class ZookeeperServiceDiscoveryTest {
         ServiceDescription description = new ServiceDescription();
         String serviceName = "TestService";
         description.setName(serviceName);
-        description.setId("service-consumer-1");
+        description.setCode("service-consumer-1");
         description.setHost("localhost");
         description.setPort(0);
 

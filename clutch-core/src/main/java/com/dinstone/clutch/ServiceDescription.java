@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014~2017 dinstone<dinstone@163.com>
+ * Copyright (C) 2014~2020 dinstone<dinstone@163.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.dinstone.clutch;
 
 import java.io.Serializable;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ import java.util.Map;
  * service description
  * 
  * @author dinstone
+ * 
  * @version 1.0.0
  */
 public class ServiceDescription implements Serializable {
@@ -30,7 +32,7 @@ public class ServiceDescription implements Serializable {
     /**  */
     private static final long serialVersionUID = 1L;
 
-    private String id;
+    private String code;
 
     private String name;
 
@@ -44,14 +46,16 @@ public class ServiceDescription implements Serializable {
 
     private long rtime;
 
+    private volatile InetSocketAddress address;
+
     private Map<String, Object> attributes = new HashMap<String, Object>();
 
-    public String getId() {
-        return id;
+    public String getCode() {
+        return code;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getName() {
@@ -122,9 +126,17 @@ public class ServiceDescription implements Serializable {
         return this;
     }
 
+    public InetSocketAddress getServiceAddress() {
+        if (address == null) {
+            address = new InetSocketAddress(host, port);
+        }
+
+        return address;
+    }
+
     @Override
     public String toString() {
-        return "ServiceDescription [id=" + id + ", name=" + name + ", group=" + group + ", host=" + host + ", port="
+        return "ServiceDescription [id=" + code + ", name=" + name + ", group=" + group + ", host=" + host + ", port="
                 + port + ", uri=" + uri + ", rtime=" + rtime + ", attributes=" + attributes + "]";
     }
 

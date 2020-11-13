@@ -15,6 +15,12 @@
  */
 package com.dinstone.clutch;
 
-public interface RegistryConfig {
-    public String getSchema();
+public interface RegistryFactory {
+
+    public boolean canApply(RegistryConfig registryConfig);
+
+    public ServiceRegistry createServiceRegistry(RegistryConfig registryConfig);
+
+    public ServiceDiscovery createServiceDiscovery(RegistryConfig registryConfig);
+
 }

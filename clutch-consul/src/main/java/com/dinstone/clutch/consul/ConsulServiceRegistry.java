@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014~2017 dinstone<dinstone@163.com>
+ * Copyright (C) 2014~2020 dinstone<dinstone@163.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.dinstone.clutch.consul;
 
 import java.util.Arrays;
@@ -54,7 +53,7 @@ public class ConsulServiceRegistry implements ServiceRegistry {
     @Override
     public void register(final ServiceDescription service) throws Exception {
         synchronized (serviceMap) {
-            if (!serviceMap.containsKey(service.getId())) {
+            if (!serviceMap.containsKey(service.getCode())) {
                 try {
                     register0(service);
                 } catch (Exception e) {
@@ -84,7 +83,7 @@ public class ConsulServiceRegistry implements ServiceRegistry {
 
     private void register0(final ServiceDescription service) throws Exception {
         NewService newService = new NewService();
-        newService.setId(service.getId());
+        newService.setId(service.getCode());
         newService.setName(service.getName());
         newService.setAddress(service.getHost());
         newService.setPort(service.getPort());
@@ -104,24 +103,24 @@ public class ConsulServiceRegistry implements ServiceRegistry {
             @Override
             public void run() {
                 try {
-                    client.agentCheckPass("service:" + service.getId());
+                    client.agentCheckPass("service:" + service.getCode());
                 } catch (Exception e) {
                     // ignore
                 }
             }
         }, interval, interval, TimeUnit.SECONDS);
 
-        serviceMap.put(service.getId(), future);
+        serviceMap.put(service.getCode(), future);
     }
 
     @Override
     public void deregister(ServiceDescription service) throws Exception {
         synchronized (serviceMap) {
-            ScheduledFuture<?> future = serviceMap.remove(service.getId());
+            ScheduledFuture<?> future = serviceMap.remove(service.getCode());
             if (future != null) {
                 future.cancel(true);
             }
-            client.agentServiceDeregister(service.getId());
+            client.agentServiceDeregister(service.getCode());
         }
     }
 

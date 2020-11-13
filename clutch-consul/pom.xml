@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.dinstone.clutch</groupId>
 		<artifactId>clutch</artifactId>
-		<version>1.1.0</version>
+		<version>1.2.0</version>
 	</parent>
 	<artifactId>clutch-consul</artifactId>
 	<dependencies>
@@ -52,4 +52,15 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>net.revelc.code.formatter</groupId>
+				<artifactId>formatter-maven-plugin</artifactId>
+				<configuration>
+					<configFile>../guide/formatter-java.xml</configFile>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014~2017 dinstone<dinstone@163.com>
+ * Copyright (C) 2014~2020 dinstone<dinstone@163.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.dinstone.clutch.zookeeper;
 
 import java.io.IOException;
@@ -38,10 +37,10 @@ import org.apache.curator.utils.ThreadUtils;
 import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.dinstone.clutch.ServiceDescription;
+import com.dinstone.loghub.Logger;
+import com.dinstone.loghub.LoggerFactory;
 
 public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDiscovery {
 
@@ -67,7 +66,7 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
             throw new IllegalArgumentException("zookeeper.node.list is empty");
         }
 
-        String basePath = discoveryConfig.getBasePath();
+        String basePath = discoveryConfig.getConfigPath();
         if (basePath == null || basePath.length() == 0) {
             throw new IllegalArgumentException("basePath is empty");
         }
@@ -75,7 +74,7 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
 
         // build CuratorFramework Object;
         this.client = CuratorFrameworkFactory.newClient(zkNodes,
-            new ExponentialBackoffRetry(discoveryConfig.getBaseSleepTime(), discoveryConfig.getMaxRetries()));
+                new ExponentialBackoffRetry(discoveryConfig.getBaseSleepTime(), discoveryConfig.getMaxRetries()));
 
         // add connection state change listener
         this.connectionStateListener = new ConnectionStateListener() {
@@ -214,13 +213,13 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
 
         public int addConsumer(ServiceDescription service) throws Exception {
             synchronized (consumers) {
-                if (consumers.containsKey(service.getId())) {
+                if (consumers.containsKey(service.getCode())) {
                     return consumers.size();
                 }
 
                 service.setRtime(System.currentTimeMillis());
                 byte[] bytes = serializer.serialize(service);
-                String path = pathForConsumer(service.getName(), service.getId());
+                String path = pathForConsumer(service.getName(), service.getCode());
 
                 final int MAX_TRIES = 2;
                 boolean isDone = false;
@@ -234,7 +233,7 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
                     }
                 }
 
-                consumers.put(service.getId(), service);
+                consumers.put(service.getCode(), service);
 
                 return consumers.size();
             }
@@ -242,7 +241,7 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
 
         public int removeConsumer(ServiceDescription service) {
             synchronized (consumers) {
-                consumers.remove(service.getId());
+                consumers.remove(service.getCode());
 
                 return consumers.size();
             }
@@ -262,25 +261,25 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
         @Override
         public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
             switch (event.getType()) {
-                case CHILD_ADDED:
-                case CHILD_UPDATED: {
-                    addProvider(event.getData(), false);
-                    break;
-                }
+            case CHILD_ADDED:
+            case CHILD_UPDATED: {
+                addProvider(event.getData(), false);
+                break;
+            }
 
-                case CHILD_REMOVED: {
-                    providers.remove(ZKPaths.getNodeFromPath(event.getData().getPath()));
-                    break;
-                }
-                default:
-                    break;
+            case CHILD_REMOVED: {
+                providers.remove(ZKPaths.getNodeFromPath(event.getData().getPath()));
+                break;
+            }
+            default:
+                break;
             }
         }
 
         public void destroy() {
             if (connectionState == ConnectionState.CONNECTED) {
                 for (ServiceDescription consumer : consumers.values()) {
-                    String path = pathForConsumer(consumer.getName(), consumer.getId());
+                    String path = pathForConsumer(consumer.getName(), consumer.getCode());
                     try {
                         client.delete().forPath(path);
                     } catch (Exception e) {

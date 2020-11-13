@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014~2017 dinstone<dinstone@163.com>
+ * Copyright (C) 2014~2020 dinstone<dinstone@163.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,64 +13,58 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.dinstone.clutch.zookeeper;
 
 import com.dinstone.clutch.RegistryConfig;
 
-public class ZookeeperRegistryConfig extends RegistryConfig {
+public class ZookeeperRegistryConfig implements RegistryConfig {
 
     private static final String DEFAULT_BASE_PATH = "/clutch/registry/";
 
-    private static final String REGISTRY_BASE_PATH = "registry.base.path";
-
-    private static final String RETRY_MAX_COUNT = "retry.max.count";
-
-    private static final String BASE_SLEEP_TIME_MS = "base.sleep.time.ms";
-
-    private static final String ZOOKEEPER_NODE_LIST = "zookeeper.node.list";
-
-    public ZookeeperRegistryConfig() {
-    }
-
-    public ZookeeperRegistryConfig(RegistryConfig config) {
-        super(config);
-    }
+    private String zookeeperNodes = "localhost:2181";
+    private String configPath = DEFAULT_BASE_PATH;
+    private int baseSleepTime = 3000;
+    private int maxRetries = 3;
 
     public String getZookeeperNodes() {
-        return get(ZOOKEEPER_NODE_LIST);
+        return zookeeperNodes;
     }
 
-    public ZookeeperRegistryConfig setZookeeperNodes(String zkNodeList) {
-        set(ZOOKEEPER_NODE_LIST, zkNodeList);
+    public ZookeeperRegistryConfig setZookeeperNodes(String zookeeperNodes) {
+        this.zookeeperNodes = zookeeperNodes;
+        return this;
+    }
+
+    public String getConfigPath() {
+        return configPath;
+    }
+
+    public ZookeeperRegistryConfig setConfigPath(String configPath) {
+        this.configPath = configPath;
         return this;
     }
 
     public int getBaseSleepTime() {
-        return getInt(BASE_SLEEP_TIME_MS, 3000);
+        return baseSleepTime;
     }
 
-    public ZookeeperRegistryConfig setBaseSleepTime(int baseTime) {
-        setInt(BASE_SLEEP_TIME_MS, baseTime);
+    public ZookeeperRegistryConfig setBaseSleepTime(int baseSleepTime) {
+        this.baseSleepTime = baseSleepTime;
         return this;
     }
 
     public int getMaxRetries() {
-        return getInt(RETRY_MAX_COUNT, 3);
+        return maxRetries;
     }
 
-    public ZookeeperRegistryConfig setMaxRetries(int maxRetry) {
-        setInt(RETRY_MAX_COUNT, maxRetry);
+    public ZookeeperRegistryConfig setMaxRetries(int maxRetries) {
+        this.maxRetries = maxRetries;
         return this;
     }
 
-    public String getBasePath() {
-        return get(REGISTRY_BASE_PATH, DEFAULT_BASE_PATH);
-    }
-
-    public ZookeeperRegistryConfig setBasePath(String basePath) {
-        set(REGISTRY_BASE_PATH, basePath);
-        return this;
+    @Override
+    public String getSchema() {
+        return "zookeeper";
     }
 
 }

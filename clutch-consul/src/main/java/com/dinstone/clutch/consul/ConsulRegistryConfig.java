@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014~2017 dinstone<dinstone@163.com>
+ * Copyright (C) 2014~2020 dinstone<dinstone@163.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,52 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.dinstone.clutch.consul;
 
 import com.dinstone.clutch.RegistryConfig;
 
-public class ConsulRegistryConfig extends RegistryConfig {
+public class ConsulRegistryConfig implements RegistryConfig {
 
-    private static final String AGENT_HOST = "agent.host";
-
-    private static final String AGENT_PORT = "agent.port";
-
-    private static final String CHECK_INTERVAL = "check.interval";
-
-    private static final String CHECK_TTL = "check.ttl";
-
-    public ConsulRegistryConfig() {
-    }
-
-    public ConsulRegistryConfig(RegistryConfig config) {
-        super(config);
-    }
+    private String agentHost = "localhost";
+    private int agentPort = 8500;
+    private int interval = 3;
+    private int checkTtl = 3;
 
     public String getAgentHost() {
-        return get(AGENT_HOST);
+        return agentHost;
+    }
+
+    public ConsulRegistryConfig setAgentHost(String agentHost) {
+        this.agentHost = agentHost;
+        return this;
     }
 
     public int getAgentPort() {
-        return getInt(AGENT_PORT, 8500);
+        return agentPort;
+    }
+
+    public ConsulRegistryConfig setAgentPort(int agentPort) {
+        this.agentPort = agentPort;
+        return this;
     }
 
     public int getInterval() {
-        return getInt(CHECK_INTERVAL, 5);
+        return interval;
     }
 
-    public int getTtl() {
-        return getInt(CHECK_TTL, 10);
-    }
-
-    public ConsulRegistryConfig setAgentHost(String host) {
-        set(AGENT_HOST, host);
+    public ConsulRegistryConfig setInterval(int interval) {
+        this.interval = interval;
         return this;
     }
 
-    public ConsulRegistryConfig setAgentPort(int port) {
-        setInt(AGENT_PORT, port);
+    public int getCheckTtl() {
+        return checkTtl;
+    }
+
+    public ConsulRegistryConfig setCheckTtl(int checkTtl) {
+        this.checkTtl = checkTtl;
         return this;
+    }
+
+    @Override
+    public String getSchema() {
+        return "consul";
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014~2017 dinstone<dinstone@163.com>
+ * Copyright (C) 2014~2020 dinstone<dinstone@163.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,11 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.dinstone.clutch.ServiceDescription;
 import com.dinstone.clutch.ServiceRegistry;
+import com.dinstone.loghub.Logger;
+import com.dinstone.loghub.LoggerFactory;
 
 public class ZookeeperServiceRegistry implements ServiceRegistry {
 
@@ -54,7 +54,7 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
             throw new IllegalArgumentException("zookeeper.node.list is empty");
         }
 
-        String basePath = registryConfig.getBasePath();
+        String basePath = registryConfig.getConfigPath();
         if (basePath == null || basePath.length() == 0) {
             throw new IllegalArgumentException("basePath is empty");
         }
@@ -62,7 +62,7 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
 
         // build CuratorFramework Object;
         this.client = CuratorFrameworkFactory.newClient(zkNodes,
-            new ExponentialBackoffRetry(registryConfig.getBaseSleepTime(), registryConfig.getMaxRetries()));
+                new ExponentialBackoffRetry(registryConfig.getBaseSleepTime(), registryConfig.getMaxRetries()));
 
         // add connection state change listener
         this.connectionStateListener = new ConnectionStateListener() {
@@ -88,7 +88,7 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
 
     @Override
     public void register(ServiceDescription service) throws Exception {
-        services.put(service.getId(), service);
+        services.put(service.getCode(), service);
         if (connectionState == ConnectionState.CONNECTED) {
             internalRegister(service);
         }
@@ -96,19 +96,19 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
 
     @Override
     public void deregister(ServiceDescription service) throws Exception {
-        String path = pathForProvider(service.getName(), service.getId());
+        String path = pathForProvider(service.getName(), service.getCode());
         try {
             client.delete().forPath(path);
         } catch (KeeperException.NoNodeException ignore) {
             // ignore
         }
-        services.remove(service.getId());
+        services.remove(service.getCode());
     }
 
     public void destroy() {
         if (connectionState == ConnectionState.CONNECTED) {
             for (ServiceDescription service : services.values()) {
-                String path = pathForProvider(service.getName(), service.getId());
+                String path = pathForProvider(service.getName(), service.getCode());
                 try {
                     client.delete().forPath(path);
                 } catch (Exception ignore) {
@@ -131,7 +131,7 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
     protected void internalRegister(ServiceDescription service) throws Exception {
         service.setRtime(System.currentTimeMillis());
         byte[] bytes = serializer.serialize(service);
-        String path = pathForProvider(service.getName(), service.getId());
+        String path = pathForProvider(service.getName(), service.getCode());
 
         final int MAX_TRIES = 2;
         boolean isDone = false;
