@@ -23,11 +23,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.dinstone.clutch.ServiceDescription;
 import com.dinstone.clutch.ServiceRegistry;
+import com.dinstone.loghub.Logger;
+import com.dinstone.loghub.LoggerFactory;
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.agent.model.NewService;
 
