@@ -15,25 +15,20 @@
  */
 package com.dinstone.clutch.zookeeper;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ThreadFactory;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.ChildData;
-import org.apache.curator.framework.recipes.cache.PathChildrenCache;
-import org.apache.curator.framework.recipes.cache.PathChildrenCache.StartMode;
-import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
-import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
+import org.apache.curator.framework.recipes.cache.CuratorCache;
+import org.apache.curator.framework.recipes.cache.CuratorCacheListener;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.curator.utils.ThreadUtils;
 import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -141,8 +136,7 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
             serviceCache = serviceCacheMap.get(description.getName());
             if (serviceCache == null) {
                 String providerPath = pathForProviders(description.getName());
-                ThreadFactory threadFactory = ThreadUtils.newThreadFactory("ServiceDiscovery");
-                serviceCache = new ServiceCache(client, providerPath, threadFactory).build();
+                serviceCache = new ServiceCache(client, providerPath).build();
                 serviceCacheMap.put(description.getName(), serviceCache);
             }
         }
@@ -184,17 +178,20 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
         return ZKPaths.makePath(basePath, name);
     }
 
-    private class ServiceCache implements PathChildrenCacheListener {
+    private class ServiceCache implements CuratorCacheListener {
 
         private final ConcurrentHashMap<String, ServiceDescription> providers = new ConcurrentHashMap<String, ServiceDescription>();
 
         private final ConcurrentHashMap<String, ServiceDescription> consumers = new ConcurrentHashMap<String, ServiceDescription>();
 
-        private PathChildrenCache pathCache;
+        private CuratorCache pathCache;
 
-        public ServiceCache(CuratorFramework client, String name, ThreadFactory threadFactory) {
-            pathCache = new PathChildrenCache(client, name, true, threadFactory);
-            pathCache.getListenable().addListener(this);
+        private String providerPath;
+
+        public ServiceCache(CuratorFramework client, String providerPath) {
+            pathCache = CuratorCache.build(client, providerPath);
+            pathCache.listenable().addListener(this);
+            this.providerPath = providerPath;
         }
 
         public Collection<ServiceDescription> getProviders() {
@@ -202,11 +199,7 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
         }
 
         public ServiceCache build() throws Exception {
-            pathCache.start(StartMode.BUILD_INITIAL_CACHE);
-            // init cache data
-            for (ChildData childData : pathCache.getCurrentData()) {
-                addProvider(childData, true);
-            }
+            pathCache.start();
 
             return this;
         }
@@ -247,32 +240,17 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
             }
         }
 
-        private void addProvider(ChildData childData, boolean onlyIfAbsent) throws Exception {
-            String instanceId = ZKPaths.getNodeFromPath(childData.getPath());
-            ServiceDescription serviceInstance = serializer.deserialize(childData.getData());
-            if (onlyIfAbsent) {
-                providers.putIfAbsent(instanceId, serviceInstance);
-            } else {
-                providers.put(instanceId, serviceInstance);
-            }
-            pathCache.clearDataBytes(childData.getPath(), childData.getStat().getVersion());
-        }
-
-        @Override
-        public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
-            switch (event.getType()) {
-            case CHILD_ADDED:
-            case CHILD_UPDATED: {
-                addProvider(event.getData(), false);
-                break;
-            }
-
-            case CHILD_REMOVED: {
-                providers.remove(ZKPaths.getNodeFromPath(event.getData().getPath()));
-                break;
-            }
-            default:
-                break;
+        private void addProvider(ChildData childData, boolean onlyIfAbsent) {
+            try {
+                String instanceId = ZKPaths.getNodeFromPath(childData.getPath());
+                ServiceDescription serviceInstance = serializer.deserialize(childData.getData());
+                if (onlyIfAbsent) {
+                    providers.putIfAbsent(instanceId, serviceInstance);
+                } else {
+                    providers.put(instanceId, serviceInstance);
+                }
+            } catch (Exception e) {
+                // ignore
             }
         }
 
@@ -287,10 +265,38 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
                 }
             }
 
-            pathCache.getListenable().removeListener(this);
-            try {
-                pathCache.close();
-            } catch (IOException e) {
+            pathCache.listenable().removeListener(this);
+            pathCache.close();
+        }
+
+        @Override
+        public void event(Type type, ChildData oldData, ChildData data) {
+            switch (type) {
+            case NODE_CREATED: {
+                if (providerPath.equals(data.getPath())) {
+                    return;
+                }
+                addProvider(data, false);
+                break;
+            }
+
+            case NODE_CHANGED: {
+                if (providerPath.equals(data.getPath())) {
+                    return;
+                }
+                addProvider(data, false);
+                break;
+            }
+
+            case NODE_DELETED: {
+                if (providerPath.equals(data.getPath())) {
+                    return;
+                }
+                providers.remove(ZKPaths.getNodeFromPath(oldData.getPath()));
+                break;
+            }
+            default:
+                break;
             }
         }
 

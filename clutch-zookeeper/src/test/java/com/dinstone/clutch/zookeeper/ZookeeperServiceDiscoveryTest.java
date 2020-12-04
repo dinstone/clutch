@@ -18,8 +18,12 @@ package com.dinstone.clutch.zookeeper;
 import java.util.List;
 
 import com.dinstone.clutch.ServiceDescription;
+import com.dinstone.loghub.Logger;
+import com.dinstone.loghub.LoggerFactory;
 
 public class ZookeeperServiceDiscoveryTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ZookeeperServiceDiscoveryTest.class);
 
     public static void main(String[] args) {
 
@@ -49,13 +53,13 @@ public class ZookeeperServiceDiscoveryTest {
                 List<ServiceDescription> plist = discovery.discovery(serviceName, null);
                 if (plist != null && plist.size() > 0) {
                     for (ServiceDescription psd : plist) {
-                        System.out.println(psd);
+                        LOG.info(psd);
                     }
                 } else {
-                    System.out.println("empty");
+                    LOG.info("empty");
                 }
 
-                Thread.sleep(3000);
+                Thread.sleep(30);
             }
         } catch (Exception e) {
             e.printStackTrace();
