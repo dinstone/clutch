@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -44,8 +43,6 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
     private final ServiceDescriptionSerializer serializer = new ServiceDescriptionSerializer();
 
     private final ConcurrentHashMap<String, ServiceCache> serviceCacheMap = new ConcurrentHashMap<>();
-
-    private final ConcurrentLinkedQueue<ServiceDescription> listenServices = new ConcurrentLinkedQueue<>();
 
     private volatile ConnectionState connectionState = ConnectionState.LOST;
 
@@ -93,28 +90,28 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
     }
 
     protected void watch() throws Exception {
-        ServiceDescription serviceDescription = null;
-        while ((serviceDescription = listenServices.peek()) != null) {
-            internalListen(serviceDescription);
-
-            listenServices.remove();
+        synchronized (serviceCacheMap) {
+            for (ServiceCache serviceCache : serviceCacheMap.values()) {
+                serviceCache.addConsumer();
+            }
         }
     }
 
     @Override
     public void destroy() {
-        for (ServiceCache serviceCache : serviceCacheMap.values()) {
-            serviceCache.destroy();
+        synchronized (serviceCacheMap) {
+            for (ServiceCache serviceCache : serviceCacheMap.values()) {
+                serviceCache.destroy();
+            }
+            serviceCacheMap.clear();
         }
-        serviceCacheMap.clear();
-
         client.close();
     }
 
     @Override
     public void cancel(ServiceDescription description) {
         ServiceCache serviceCache = serviceCacheMap.get(description.getName());
-        if (serviceCache != null && serviceCache.removeConsumer(description) <= 0) {
+        if (serviceCache != null && serviceCache.removeConsumer() <= 0) {
             serviceCache.destroy();
             serviceCacheMap.remove(description.getName());
         }
@@ -122,26 +119,17 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
 
     @Override
     public void listen(ServiceDescription description) throws Exception {
-        if (connectionState != ConnectionState.CONNECTED) {
-            listenServices.add(description);
-        } else {
-            internalListen(description);
-        }
-    }
-
-    protected void internalListen(ServiceDescription description) throws Exception {
         ServiceCache serviceCache = null;
-
         synchronized (serviceCacheMap) {
             serviceCache = serviceCacheMap.get(description.getName());
             if (serviceCache == null) {
-                String providerPath = pathForProviders(description.getName());
-                serviceCache = new ServiceCache(client, providerPath).build();
+                serviceCache = new ServiceCache(client, description).build();
                 serviceCacheMap.put(description.getName(), serviceCache);
             }
         }
-
-        serviceCache.addConsumer(description);
+        if (connectionState == ConnectionState.CONNECTED) {
+            serviceCache.addConsumer();
+        }
     }
 
     @Override
@@ -184,14 +172,18 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
 
         private final ConcurrentHashMap<String, ServiceDescription> consumers = new ConcurrentHashMap<String, ServiceDescription>();
 
+        private ServiceDescription description;
+
         private CuratorCache pathCache;
 
         private String providerPath;
 
-        public ServiceCache(CuratorFramework client, String providerPath) {
+        public ServiceCache(CuratorFramework client, ServiceDescription description) {
+            providerPath = pathForProviders(description.getName());
+            this.description = description;
+
             pathCache = CuratorCache.build(client, providerPath);
             pathCache.listenable().addListener(this);
-            this.providerPath = providerPath;
         }
 
         public Collection<ServiceDescription> getProviders() {
@@ -200,19 +192,18 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
 
         public ServiceCache build() throws Exception {
             pathCache.start();
-
             return this;
         }
 
-        public int addConsumer(ServiceDescription service) throws Exception {
+        public int addConsumer() throws Exception {
             synchronized (consumers) {
-                if (consumers.containsKey(service.getCode())) {
+                if (consumers.containsKey(description.getCode())) {
                     return consumers.size();
                 }
 
-                service.setRtime(System.currentTimeMillis());
-                byte[] bytes = serializer.serialize(service);
-                String path = pathForConsumer(service.getName(), service.getCode());
+                description.setRtime(System.currentTimeMillis());
+                byte[] bytes = serializer.serialize(description);
+                String path = pathForConsumer(description.getName(), description.getCode());
 
                 final int MAX_TRIES = 2;
                 boolean isDone = false;
@@ -226,15 +217,15 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
                     }
                 }
 
-                consumers.put(service.getCode(), service);
+                consumers.put(description.getCode(), description);
 
                 return consumers.size();
             }
         }
 
-        public int removeConsumer(ServiceDescription service) {
+        public int removeConsumer() {
             synchronized (consumers) {
-                consumers.remove(service.getCode());
+                consumers.remove(description.getCode());
 
                 return consumers.size();
             }
