@@ -22,7 +22,7 @@ public class ConsulRegistryConfig implements RegistryConfig {
     private String agentHost = "localhost";
     private int agentPort = 8500;
     private int interval = 3;
-    private int checkTtl = 3;
+    private int checkTtl = 6;
 
     public String getAgentHost() {
         return agentHost;

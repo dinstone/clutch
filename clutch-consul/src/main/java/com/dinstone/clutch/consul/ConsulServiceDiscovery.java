@@ -15,7 +15,6 @@
  */
 package com.dinstone.clutch.consul;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.dinstone.clutch.ServiceDescription;
 import com.dinstone.clutch.ServiceDiscovery;
 import com.ecwid.consul.v1.ConsulClient;
+import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
 
 public class ConsulServiceDiscovery implements ServiceDiscovery {
@@ -75,7 +75,8 @@ public class ConsulServiceDiscovery implements ServiceDiscovery {
         }
 
         protected void freshProvidors() throws Exception {
-            List<HealthService> healthServices = client.getHealthServices(description.getName(), true, null).getValue();
+            HealthServicesRequest hr = HealthServicesRequest.newBuilder().setPassing(true).build();
+            List<HealthService> healthServices = client.getHealthServices(description.getName(), hr).getValue();
             for (HealthService healthService : healthServices) {
                 List<String> tags = healthService.getService().getTags();
                 ServiceDescription description = null;
@@ -158,25 +159,12 @@ public class ConsulServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public List<ServiceDescription> discovery(String name, String group) throws Exception {
-        List<ServiceDescription> serviceProviders = new ArrayList<>();
-
+    public Collection<ServiceDescription> discovery(String name) throws Exception {
         ServiceCache serviceCache = serviceCacheMap.get(name);
         if (serviceCache != null) {
-            for (ServiceDescription serviceDescription : serviceCache.getProviders()) {
-                if (group != null) {
-                    if (group.equals(serviceDescription.getGroup())) {
-                        serviceProviders.add(serviceDescription);
-                    }
-                } else {
-                    if (group == serviceDescription.getGroup()) {
-                        serviceProviders.add(serviceDescription);
-                    }
-                }
-            }
+            return serviceCache.getProviders();
         }
-
-        return serviceProviders;
+        return null;
     }
 
 }

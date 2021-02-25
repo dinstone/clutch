@@ -15,9 +15,7 @@
  */
 package com.dinstone.clutch.zookeeper;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.curator.framework.CuratorFramework;
@@ -133,25 +131,12 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
     }
 
     @Override
-    public List<ServiceDescription> discovery(String name, String group) throws Exception {
-        List<ServiceDescription> serviceProviders = new ArrayList<>();
-
+    public Collection<ServiceDescription> discovery(String name) throws Exception {
         ServiceCache serviceCache = serviceCacheMap.get(name);
         if (serviceCache != null) {
-            for (ServiceDescription serviceDescription : serviceCache.getProviders()) {
-                if (group != null) {
-                    if (group.equals(serviceDescription.getGroup())) {
-                        serviceProviders.add(serviceDescription);
-                    }
-                } else {
-                    if (group == serviceDescription.getGroup()) {
-                        serviceProviders.add(serviceDescription);
-                    }
-                }
-            }
+            return serviceCache.getProviders();
         }
-
-        return serviceProviders;
+        return null;
     }
 
     private String pathForConsumer(String name, String id) {

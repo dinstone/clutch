@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.agent.model.NewService;
+import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
 
 public class ConsulRegistry {
@@ -46,6 +47,8 @@ public class ConsulRegistry {
         check.setTtl("30s");
         newService.setCheck(check);
 
+        client.agentCheckDeregister("service:com.rpc.demo.server@172.30.79.188:3333#");
+
         client.agentServiceRegister(newService);
 
         showServices(client, newService);
@@ -53,7 +56,7 @@ public class ConsulRegistry {
         while (true) {
             client.agentCheckPass("service:" + newService.getId());
             try {
-                Thread.sleep(10000);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -64,8 +67,8 @@ public class ConsulRegistry {
     }
 
     private static void showServices(ConsulClient client, NewService newService) {
-        // 获取所有服务
-        List<HealthService> response = client.getHealthServices(newService.getName(), true, null).getValue();
+        HealthServicesRequest hr = HealthServicesRequest.newBuilder().setPassing(true).build();
+        List<HealthService> response = client.getHealthServices(newService.getName(), hr).getValue();
         for (HealthService service : response) {
             for (com.ecwid.consul.v1.health.model.Check c : service.getChecks()) {
                 System.out.println(service.getService() + ": " + c);

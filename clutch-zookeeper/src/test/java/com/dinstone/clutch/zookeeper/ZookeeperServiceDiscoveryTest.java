@@ -15,7 +15,7 @@
  */
 package com.dinstone.clutch.zookeeper;
 
-import java.util.List;
+import java.util.Collection;
 
 import com.dinstone.clutch.ServiceDescription;
 import com.dinstone.loghub.Logger;
@@ -50,7 +50,7 @@ public class ZookeeperServiceDiscoveryTest {
             // discovery.listen(description);
 
             while (true) {
-                List<ServiceDescription> plist = discovery.discovery(serviceName, null);
+                Collection<ServiceDescription> plist = discovery.discovery(serviceName);
                 if (plist != null && plist.size() > 0) {
                     for (ServiceDescription psd : plist) {
                         LOG.info(psd);

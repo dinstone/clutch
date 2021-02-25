@@ -15,7 +15,7 @@
  */
 package com.dinstone.clutch.consul;
 
-import java.util.List;
+import java.util.Collection;
 
 import com.dinstone.clutch.ServiceDescription;
 
@@ -45,7 +45,7 @@ public class ConsulServiceDiscoveryTest {
             // discovery.listen(description);
 
             while (true) {
-                List<ServiceDescription> plist = discovery.discovery(serviceName, null);
+                Collection<ServiceDescription> plist = discovery.discovery(serviceName);
                 if (plist != null && plist.size() > 0) {
                     for (ServiceDescription psd : plist) {
                         System.out.println(psd);

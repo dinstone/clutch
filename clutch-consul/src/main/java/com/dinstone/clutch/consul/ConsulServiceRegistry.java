@@ -88,7 +88,7 @@ public class ConsulServiceRegistry implements ServiceRegistry {
         newService.setPort(service.getPort());
 
         NewService.Check check = new NewService.Check();
-        check.setTtl(config.getInterval() + "s");
+        check.setTtl(config.getCheckTtl() + "s");
         newService.setCheck(check);
 
         byte[] serialize = serializer.serialize(service);
@@ -96,7 +96,6 @@ public class ConsulServiceRegistry implements ServiceRegistry {
 
         client.agentServiceRegister(newService);
 
-        long interval = config.getInterval();
         ScheduledFuture<?> future = executorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -107,7 +106,7 @@ public class ConsulServiceRegistry implements ServiceRegistry {
                     // ignore
                 }
             }
-        }, interval, interval, TimeUnit.SECONDS);
+        }, 0, config.getInterval(), TimeUnit.SECONDS);
 
         serviceMap.put(service.getCode(), future);
     }

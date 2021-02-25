@@ -36,9 +36,9 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
 
     private static final Logger LOG = LoggerFactory.getLogger(ZookeeperServiceRegistry.class);
 
-    private final Map<String, ServiceDescription> services = new ConcurrentHashMap<String, ServiceDescription>();
-
     private final ServiceDescriptionSerializer serializer = new ServiceDescriptionSerializer();
+
+    private final Map<String, ServiceDescription> services = new ConcurrentHashMap<>();
 
     private volatile ConnectionState connectionState = ConnectionState.LOST;
 
@@ -73,7 +73,7 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
                 if ((newState == ConnectionState.RECONNECTED) || (newState == ConnectionState.CONNECTED)) {
                     try {
                         LOG.debug("Re-registering due to reconnection");
-                        reRegister();
+                        again();
                     } catch (Exception e) {
                         LOG.error("Could not re-register instances after reconnection", e);
                     }
@@ -99,7 +99,7 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
         String path = pathForProvider(service.getName(), service.getCode());
         try {
             client.delete().forPath(path);
-        } catch (KeeperException.NoNodeException ignore) {
+        } catch (Exception ignore) {
             // ignore
         }
         services.remove(service.getCode());
@@ -108,11 +108,9 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
     public void destroy() {
         if (connectionState == ConnectionState.CONNECTED) {
             for (ServiceDescription service : services.values()) {
-                String path = pathForProvider(service.getName(), service.getCode());
                 try {
-                    client.delete().forPath(path);
-                } catch (Exception ignore) {
-                    // ignore
+                    deregister(service);
+                } catch (Exception e) {
                 }
             }
         }
@@ -122,7 +120,7 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
         client.close();
     }
 
-    protected void reRegister() throws Exception {
+    protected void again() throws Exception {
         for (ServiceDescription service : services.values()) {
             internalRegister(service);
         }

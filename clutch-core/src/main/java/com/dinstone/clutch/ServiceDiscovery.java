@@ -15,7 +15,7 @@
  */
 package com.dinstone.clutch;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Service Discovery
@@ -32,6 +32,6 @@ public interface ServiceDiscovery {
 
     public abstract void listen(ServiceDescription description) throws Exception;
 
-    public abstract List<ServiceDescription> discovery(String name, String group) throws Exception;
+    public abstract Collection<ServiceDescription> discovery(String name) throws Exception;
 
 }
