@@ -32,6 +32,11 @@ public class ConsulServiceRegistryTest {
         try {
             registry.register(description);
 
+            description.setCode("service-provider-2");
+            description.setHost("localhost");
+            description.setPort(81);
+            registry.register(description);
+
             System.in.read();
 
             registry.deregister(description);

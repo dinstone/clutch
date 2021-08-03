@@ -32,6 +32,10 @@ public class ServiceDescription implements Serializable {
     /**  */
     private static final long serialVersionUID = 1L;
 
+    private Map<String, Object> attributes = new HashMap<String, Object>();
+
+    private String app;
+
     private String code;
 
     private String name;
@@ -48,7 +52,13 @@ public class ServiceDescription implements Serializable {
 
     private volatile InetSocketAddress address;
 
-    private Map<String, Object> attributes = new HashMap<String, Object>();
+    public String getApp() {
+        return app;
+    }
+
+    public void setApp(String app) {
+        this.app = app;
+    }
 
     public String getCode() {
         return code;
@@ -161,8 +171,8 @@ public class ServiceDescription implements Serializable {
 
     @Override
     public String toString() {
-        return "ServiceDescription [code=" + code + ", name=" + name + ", group=" + group + ", host=" + host + ", port="
-                + port + ", uri=" + uri + ", rtime=" + rtime + ", attributes=" + attributes + "]";
+        return "ServiceDescription [app=" + app + ", code=" + code + ", name=" + name + ", group=" + group + ", host="
+                + host + ", port=" + port + ", uri=" + uri + ", attributes=" + attributes + "]";
     }
 
 }
