@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import com.dinstone.clutch.ServiceDescription;
@@ -42,7 +43,15 @@ public class ConsulServiceRegistry implements ServiceRegistry {
 
     private ServiceDescriptionSerializer serializer = new ServiceDescriptionSerializer();
 
-    private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+
+        @Override
+        public Thread newThread(Runnable taskt) {
+            Thread t = new Thread(taskt, "service-registry-thread");
+            t.setDaemon(true);
+            return t;
+        }
+    });
 
     public ConsulServiceRegistry(ConsulRegistryConfig config) {
         this.config = config;

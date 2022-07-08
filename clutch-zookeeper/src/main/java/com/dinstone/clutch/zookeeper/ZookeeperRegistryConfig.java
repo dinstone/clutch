@@ -23,7 +23,7 @@ public class ZookeeperRegistryConfig implements RegistryConfig {
 
     private String zookeeperNodes = "localhost:2181";
     private String configPath = DEFAULT_BASE_PATH;
-    private int baseSleepTime = 3000;
+    private int baseSleepTime = 1000;
     private int maxRetries = 3;
 
     public String getZookeeperNodes() {

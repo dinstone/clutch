@@ -99,10 +99,9 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
         String path = pathForProvider(service.getName(), service.getCode());
         try {
             client.delete().forPath(path);
-        } catch (Exception ignore) {
-            // ignore
+        } finally {
+            services.remove(service.getCode());
         }
-        services.remove(service.getCode());
     }
 
     public void destroy() {
