@@ -25,7 +25,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.dinstone.clutch.ServiceDescription;
+import com.dinstone.clutch.ServiceInstance;
 import com.dinstone.clutch.ServiceDiscovery;
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
@@ -37,7 +37,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery {
 
         private ConsulRegistryConfig config;
 
-        private ServiceDescription description;
+        private ServiceInstance description;
 
         private ScheduledFuture<?> scheduledFuture;
 
@@ -45,9 +45,9 @@ public class ConsulServiceDiscovery implements ServiceDiscovery {
 
         private ServiceDescriptionSerializer serializer = new ServiceDescriptionSerializer();
 
-        private ConcurrentHashMap<String, ServiceDescription> providers = new ConcurrentHashMap<>();
+        private ConcurrentHashMap<String, ServiceInstance> providers = new ConcurrentHashMap<>();
 
-        public ServiceCache(ServiceDescription description, ConsulRegistryConfig config) {
+        public ServiceCache(ServiceInstance description, ConsulRegistryConfig config) {
             this.config = config;
             this.description = description;
         }
@@ -76,21 +76,21 @@ public class ConsulServiceDiscovery implements ServiceDiscovery {
 
         protected void freshProvidors() throws Exception {
             HealthServicesRequest hr = HealthServicesRequest.newBuilder().setPassing(true).build();
-            List<HealthService> healthServices = client.getHealthServices(description.getName(), hr).getValue();
+            List<HealthService> healthServices = client.getHealthServices(description.getServiceName(), hr).getValue();
             for (HealthService healthService : healthServices) {
                 List<String> tags = healthService.getService().getTags();
-                ServiceDescription description = null;
+                ServiceInstance description = null;
                 if (tags != null && tags.size() > 0) {
                     description = serializer.deserialize(tags.get(0).getBytes("utf-8"));
                 }
 
                 if (description != null) {
-                    providers.put(description.getCode(), description);
+                    providers.put(description.getInstanceCode(), description);
                 }
             }
         }
 
-        public Collection<ServiceDescription> getProviders() {
+        public Collection<ServiceInstance> getProviders() {
             return providers.values();
         }
 
@@ -136,30 +136,30 @@ public class ConsulServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void cancel(ServiceDescription description) {
+    public void cancel(ServiceInstance description) {
         synchronized (serviceCacheMap) {
-            ServiceCache serviceCache = serviceCacheMap.get(description.getName());
+            ServiceCache serviceCache = serviceCacheMap.get(description.getServiceName());
             if (serviceCache != null && serviceCache.decrement() <= 0) {
                 serviceCache.destroy();
-                serviceCacheMap.remove(description.getName());
+                serviceCacheMap.remove(description.getServiceName());
             }
         }
     }
 
     @Override
-    public void listen(ServiceDescription description) throws Exception {
+    public void listen(ServiceInstance description) throws Exception {
         synchronized (serviceCacheMap) {
-            ServiceCache serviceCache = serviceCacheMap.get(description.getName());
+            ServiceCache serviceCache = serviceCacheMap.get(description.getServiceName());
             if (serviceCache == null) {
                 serviceCache = new ServiceCache(description, config).build();
-                serviceCacheMap.put(description.getName(), serviceCache);
+                serviceCacheMap.put(description.getServiceName(), serviceCache);
             }
             serviceCache.increment();
         }
     }
 
     @Override
-    public Collection<ServiceDescription> discovery(String name) throws Exception {
+    public Collection<ServiceInstance> discovery(String name) throws Exception {
         ServiceCache serviceCache = serviceCacheMap.get(name);
         if (serviceCache != null) {
             return serviceCache.getProviders();

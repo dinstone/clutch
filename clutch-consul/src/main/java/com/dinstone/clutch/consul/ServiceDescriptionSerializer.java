@@ -15,7 +15,7 @@
  */
 package com.dinstone.clutch.consul;
 
-import com.dinstone.clutch.ServiceDescription;
+import com.dinstone.clutch.ServiceInstance;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,14 +30,14 @@ public class ServiceDescriptionSerializer {
         mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-        type = mapper.getTypeFactory().constructType(ServiceDescription.class);
+        type = mapper.getTypeFactory().constructType(ServiceInstance.class);
     }
 
-    public byte[] serialize(ServiceDescription service) throws Exception {
+    public byte[] serialize(ServiceInstance service) throws Exception {
         return mapper.writeValueAsBytes(service);
     }
 
-    public ServiceDescription deserialize(byte[] bytes) throws Exception {
+    public ServiceInstance deserialize(byte[] bytes) throws Exception {
         return mapper.readValue(bytes, type);
     }
 

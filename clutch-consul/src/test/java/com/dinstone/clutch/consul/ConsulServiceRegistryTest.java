@@ -15,15 +15,15 @@
  */
 package com.dinstone.clutch.consul;
 
-import com.dinstone.clutch.ServiceDescription;
+import com.dinstone.clutch.ServiceInstance;
 
 public class ConsulServiceRegistryTest {
 
     public static void main(String[] args) {
-        ServiceDescription description = new ServiceDescription();
+        ServiceInstance description = new ServiceInstance();
         String serviceName = "TestService";
-        description.setName(serviceName);
-        description.setCode("service-provider-1");
+        description.setServiceName(serviceName);
+        description.setInstanceCode("service-provider-1");
         description.setHost("localhost");
         description.setPort(80);
 
@@ -32,7 +32,7 @@ public class ConsulServiceRegistryTest {
         try {
             registry.register(description);
 
-            description.setCode("service-provider-2");
+            description.setInstanceCode("service-provider-2");
             description.setHost("localhost");
             description.setPort(81);
             registry.register(description);

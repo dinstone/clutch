@@ -33,7 +33,7 @@ public interface ServiceRegistry {
      * @throws Exception
      *             errors
      */
-    public void register(ServiceDescription service) throws Exception;
+    public void register(ServiceInstance service) throws Exception;
 
     /**
      * Deregister / Remove a service instance
@@ -44,7 +44,7 @@ public interface ServiceRegistry {
      * @throws Exception
      *             errors
      */
-    public void deregister(ServiceDescription service) throws Exception;
+    public void deregister(ServiceInstance service) throws Exception;
 
     /**
      * resource release

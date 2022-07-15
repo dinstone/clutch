@@ -17,7 +17,7 @@ package com.dinstone.clutch.zookeeper;
 
 import java.util.Collection;
 
-import com.dinstone.clutch.ServiceDescription;
+import com.dinstone.clutch.ServiceInstance;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
 
@@ -30,10 +30,10 @@ public class ZookeeperServiceDiscoveryTest {
         ZookeeperRegistryConfig config = new ZookeeperRegistryConfig().setZookeeperNodes("localhost:2181");
 
         ZookeeperServiceDiscovery discovery = new ZookeeperServiceDiscovery(config);
-        ServiceDescription description = new ServiceDescription();
+        ServiceInstance description = new ServiceInstance();
         String serviceName = "TestService";
-        description.setName(serviceName);
-        description.setCode("service-consumer-1");
+        description.setServiceName(serviceName);
+        description.setInstanceCode("service-consumer-1");
         description.setHost("localhost");
         description.setPort(0);
 
@@ -50,9 +50,9 @@ public class ZookeeperServiceDiscoveryTest {
             // discovery.listen(description);
 
             while (true) {
-                Collection<ServiceDescription> plist = discovery.discovery(serviceName);
+                Collection<ServiceInstance> plist = discovery.discovery(serviceName);
                 if (plist != null && plist.size() > 0) {
-                    for (ServiceDescription psd : plist) {
+                    for (ServiceInstance psd : plist) {
                         LOG.info(psd);
                     }
                 } else {

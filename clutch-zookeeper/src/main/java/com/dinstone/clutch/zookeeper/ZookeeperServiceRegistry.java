@@ -27,7 +27,7 @@ import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 
-import com.dinstone.clutch.ServiceDescription;
+import com.dinstone.clutch.ServiceInstance;
 import com.dinstone.clutch.ServiceRegistry;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
@@ -38,7 +38,7 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
 
     private final ServiceDescriptionSerializer serializer = new ServiceDescriptionSerializer();
 
-    private final Map<String, ServiceDescription> services = new ConcurrentHashMap<>();
+    private final Map<String, ServiceInstance> services = new ConcurrentHashMap<>();
 
     private volatile ConnectionState connectionState = ConnectionState.LOST;
 
@@ -87,26 +87,26 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
     }
 
     @Override
-    public void register(ServiceDescription service) throws Exception {
-        services.put(service.getCode(), service);
+    public void register(ServiceInstance service) throws Exception {
+        services.put(service.getInstanceCode(), service);
         if (connectionState == ConnectionState.CONNECTED) {
             internalRegister(service);
         }
     }
 
     @Override
-    public void deregister(ServiceDescription service) throws Exception {
-        String path = pathForProvider(service.getName(), service.getCode());
+    public void deregister(ServiceInstance service) throws Exception {
+        String path = pathForProvider(service.getServiceName(), service.getInstanceCode());
         try {
             client.delete().forPath(path);
         } finally {
-            services.remove(service.getCode());
+            services.remove(service.getInstanceCode());
         }
     }
 
     public void destroy() {
         if (connectionState == ConnectionState.CONNECTED) {
-            for (ServiceDescription service : services.values()) {
+            for (ServiceInstance service : services.values()) {
                 try {
                     deregister(service);
                 } catch (Exception e) {
@@ -120,15 +120,15 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
     }
 
     protected void again() throws Exception {
-        for (ServiceDescription service : services.values()) {
+        for (ServiceInstance service : services.values()) {
             internalRegister(service);
         }
     }
 
-    protected void internalRegister(ServiceDescription service) throws Exception {
+    protected void internalRegister(ServiceInstance service) throws Exception {
         service.setRtime(System.currentTimeMillis());
         byte[] bytes = serializer.serialize(service);
-        String path = pathForProvider(service.getName(), service.getCode());
+        String path = pathForProvider(service.getServiceName(), service.getInstanceCode());
 
         final int MAX_TRIES = 2;
         boolean isDone = false;

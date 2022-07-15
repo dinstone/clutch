@@ -21,67 +21,65 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * service description
+ * service instance info
  * 
  * @author dinstone
  * 
  * @version 1.0.0
  */
-public class ServiceDescription implements Serializable {
+public class ServiceInstance implements Serializable {
 
     /**  */
     private static final long serialVersionUID = 1L;
 
     private Map<String, Object> attributes = new HashMap<String, Object>();
 
-    private String app;
+    private String instanceCode;
 
-    private String code;
+    private String endpointCode;
 
-    private String name;
+    private String serviceName;
 
-    private String group;
+    private String serviceGroup;
 
     private String host;
 
     private int port;
 
-    private String uri;
-
     private long rtime;
 
     private volatile InetSocketAddress address;
 
-    public String getApp() {
-        return app;
+    public String getEndpointCode() {
+        return endpointCode;
     }
 
-    public void setApp(String app) {
-        this.app = app;
+    public void setEndpointCode(String endpointCode) {
+        this.endpointCode = endpointCode;
     }
 
-    public String getCode() {
-        return code;
+    public String getInstanceCode() {
+        return instanceCode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setInstanceCode(String instanceCode) {
+        this.instanceCode = instanceCode;
     }
 
-    public String getName() {
-        return name;
+    public String getServiceName() {
+        return serviceName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
     }
 
-    public String getGroup() {
-        return group;
+    public String getServiceGroup() {
+        return serviceGroup;
     }
 
-    public void setGroup(String group) {
-        this.group = group;
+    public void setServiceGroup(String group) {
+        this.serviceGroup = group;
     }
 
     public String getHost() {
@@ -98,14 +96,6 @@ public class ServiceDescription implements Serializable {
 
     public void setPort(int port) {
         this.port = port;
-    }
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
     }
 
     public long getRtime() {
@@ -126,12 +116,12 @@ public class ServiceDescription implements Serializable {
         }
     }
 
-    public ServiceDescription addAttribute(String att, Object value) {
+    public ServiceInstance addAttribute(String att, Object value) {
         this.attributes.put(att, value);
         return this;
     }
 
-    public ServiceDescription removeAttribute(String att) {
+    public ServiceInstance removeAttribute(String att) {
         this.attributes.remove(att);
         return this;
     }
@@ -148,7 +138,7 @@ public class ServiceDescription implements Serializable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((code == null) ? 0 : code.hashCode());
+        result = prime * result + ((instanceCode == null) ? 0 : instanceCode.hashCode());
         return result;
     }
 
@@ -160,19 +150,20 @@ public class ServiceDescription implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        ServiceDescription other = (ServiceDescription) obj;
-        if (code == null) {
-            if (other.code != null)
+        ServiceInstance other = (ServiceInstance) obj;
+        if (instanceCode == null) {
+            if (other.instanceCode != null)
                 return false;
-        } else if (!code.equals(other.code))
+        } else if (!instanceCode.equals(other.instanceCode))
             return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return "ServiceDescription [app=" + app + ", code=" + code + ", name=" + name + ", group=" + group + ", host="
-                + host + ", port=" + port + ", uri=" + uri + ", attributes=" + attributes + "]";
+        return "ServiceInstance [instanceCode=" + instanceCode + ", endpointCode=" + endpointCode + ", serviceName="
+                + serviceName + ", serviceGroup=" + serviceGroup + ", host=" + host + ", port=" + port + ", rtime="
+                + rtime + ", address=" + address + "]";
     }
 
 }

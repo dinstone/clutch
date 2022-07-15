@@ -17,7 +17,7 @@ package com.dinstone.clutch.consul;
 
 import java.util.Collection;
 
-import com.dinstone.clutch.ServiceDescription;
+import com.dinstone.clutch.ServiceInstance;
 
 public class ConsulServiceDiscoveryTest {
 
@@ -25,10 +25,10 @@ public class ConsulServiceDiscoveryTest {
         ConsulRegistryConfig config = new ConsulRegistryConfig().setAgentHost("127.0.0.1").setAgentPort(8500);
 
         ConsulServiceDiscovery discovery = new ConsulServiceDiscovery(config);
-        ServiceDescription description = new ServiceDescription();
+        ServiceInstance description = new ServiceInstance();
         String serviceName = "TestService";
-        description.setName(serviceName);
-        description.setCode("service-consumer-1");
+        description.setServiceName(serviceName);
+        description.setInstanceCode("service-consumer-1");
         description.setHost("localhost");
         description.setPort(0);
 
@@ -45,9 +45,9 @@ public class ConsulServiceDiscoveryTest {
             // discovery.listen(description);
 
             while (true) {
-                Collection<ServiceDescription> plist = discovery.discovery(serviceName);
+                Collection<ServiceInstance> plist = discovery.discovery(serviceName);
                 if (plist != null && plist.size() > 0) {
-                    for (ServiceDescription psd : plist) {
+                    for (ServiceInstance psd : plist) {
                         System.out.println(psd);
                     }
                 } else {

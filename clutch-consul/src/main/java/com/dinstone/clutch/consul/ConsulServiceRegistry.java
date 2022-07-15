@@ -24,7 +24,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import com.dinstone.clutch.ServiceDescription;
+import com.dinstone.clutch.ServiceInstance;
 import com.dinstone.clutch.ServiceRegistry;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
@@ -59,9 +59,9 @@ public class ConsulServiceRegistry implements ServiceRegistry {
     }
 
     @Override
-    public void register(final ServiceDescription service) throws Exception {
+    public void register(final ServiceInstance service) throws Exception {
         synchronized (serviceMap) {
-            if (!serviceMap.containsKey(service.getCode())) {
+            if (!serviceMap.containsKey(service.getInstanceCode())) {
                 try {
                     register0(service);
                 } catch (Exception e) {
@@ -71,7 +71,7 @@ public class ConsulServiceRegistry implements ServiceRegistry {
         }
     }
 
-    private void retry(final ServiceDescription service) {
+    private void retry(final ServiceInstance service) {
         executorService.schedule(new Runnable() {
 
             @Override
@@ -89,10 +89,10 @@ public class ConsulServiceRegistry implements ServiceRegistry {
         }, config.getInterval(), TimeUnit.SECONDS);
     }
 
-    private void register0(final ServiceDescription service) throws Exception {
+    private void register0(final ServiceInstance service) throws Exception {
         NewService newService = new NewService();
-        newService.setId(service.getCode());
-        newService.setName(service.getName());
+        newService.setId(service.getInstanceCode());
+        newService.setName(service.getServiceName());
         newService.setAddress(service.getHost());
         newService.setPort(service.getPort());
 
@@ -110,24 +110,24 @@ public class ConsulServiceRegistry implements ServiceRegistry {
             @Override
             public void run() {
                 try {
-                    client.agentCheckPass("service:" + service.getCode());
+                    client.agentCheckPass("service:" + service.getInstanceCode());
                 } catch (Exception e) {
                     // ignore
                 }
             }
         }, 0, config.getInterval(), TimeUnit.SECONDS);
 
-        serviceMap.put(service.getCode(), future);
+        serviceMap.put(service.getInstanceCode(), future);
     }
 
     @Override
-    public void deregister(ServiceDescription service) throws Exception {
+    public void deregister(ServiceInstance service) throws Exception {
         synchronized (serviceMap) {
-            ScheduledFuture<?> future = serviceMap.remove(service.getCode());
+            ScheduledFuture<?> future = serviceMap.remove(service.getInstanceCode());
             if (future != null) {
                 future.cancel(true);
             }
-            client.agentServiceDeregister(service.getCode());
+            client.agentServiceDeregister(service.getInstanceCode());
         }
     }
 

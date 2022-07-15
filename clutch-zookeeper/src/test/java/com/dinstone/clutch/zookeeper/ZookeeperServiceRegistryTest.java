@@ -15,15 +15,15 @@
  */
 package com.dinstone.clutch.zookeeper;
 
-import com.dinstone.clutch.ServiceDescription;
+import com.dinstone.clutch.ServiceInstance;
 
 public class ZookeeperServiceRegistryTest {
 
     public static void main(String[] args) {
-        ServiceDescription description = new ServiceDescription();
+        ServiceInstance description = new ServiceInstance();
         String serviceName = "TestService";
-        description.setName(serviceName);
-        description.setCode("service-provider-" + System.currentTimeMillis());
+        description.setServiceName(serviceName);
+        description.setInstanceCode("service-provider-" + System.currentTimeMillis());
         description.setHost("localhost");
         description.setPort(80);
 

@@ -30,7 +30,7 @@ import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 
-import com.dinstone.clutch.ServiceDescription;
+import com.dinstone.clutch.ServiceInstance;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
 
@@ -107,22 +107,22 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
     }
 
     @Override
-    public void cancel(ServiceDescription description) {
-        ServiceCache serviceCache = serviceCacheMap.get(description.getName());
+    public void cancel(ServiceInstance description) {
+        ServiceCache serviceCache = serviceCacheMap.get(description.getServiceName());
         if (serviceCache != null && serviceCache.removeConsumer() <= 0) {
             serviceCache.destroy();
-            serviceCacheMap.remove(description.getName());
+            serviceCacheMap.remove(description.getServiceName());
         }
     }
 
     @Override
-    public void listen(ServiceDescription description) throws Exception {
+    public void listen(ServiceInstance description) throws Exception {
         ServiceCache serviceCache = null;
         synchronized (serviceCacheMap) {
-            serviceCache = serviceCacheMap.get(description.getName());
+            serviceCache = serviceCacheMap.get(description.getServiceName());
             if (serviceCache == null) {
                 serviceCache = new ServiceCache(client, description).build();
-                serviceCacheMap.put(description.getName(), serviceCache);
+                serviceCacheMap.put(description.getServiceName(), serviceCache);
             }
         }
         if (connectionState == ConnectionState.CONNECTED) {
@@ -131,7 +131,7 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
     }
 
     @Override
-    public Collection<ServiceDescription> discovery(String name) throws Exception {
+    public Collection<ServiceInstance> discovery(String name) throws Exception {
         ServiceCache serviceCache = serviceCacheMap.get(name);
         if (serviceCache != null) {
             return serviceCache.getProviders();
@@ -153,25 +153,25 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
 
     private class ServiceCache implements CuratorCacheListener {
 
-        private final ConcurrentHashMap<String, ServiceDescription> providers = new ConcurrentHashMap<String, ServiceDescription>();
+        private final ConcurrentHashMap<String, ServiceInstance> providers = new ConcurrentHashMap<String, ServiceInstance>();
 
-        private final ConcurrentHashMap<String, ServiceDescription> consumers = new ConcurrentHashMap<String, ServiceDescription>();
+        private final ConcurrentHashMap<String, ServiceInstance> consumers = new ConcurrentHashMap<String, ServiceInstance>();
 
-        private ServiceDescription description;
+        private ServiceInstance description;
 
         private CuratorCache pathCache;
 
         private String providerPath;
 
-        public ServiceCache(CuratorFramework client, ServiceDescription description) {
-            providerPath = pathForProviders(description.getName());
+        public ServiceCache(CuratorFramework client, ServiceInstance description) {
+            providerPath = pathForProviders(description.getServiceName());
             this.description = description;
 
             pathCache = CuratorCache.build(client, providerPath);
             pathCache.listenable().addListener(this);
         }
 
-        public Collection<ServiceDescription> getProviders() {
+        public Collection<ServiceInstance> getProviders() {
             return providers.values();
         }
 
@@ -182,13 +182,13 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
 
         public int addConsumer() throws Exception {
             synchronized (consumers) {
-                if (consumers.containsKey(description.getCode())) {
+                if (consumers.containsKey(description.getInstanceCode())) {
                     return consumers.size();
                 }
 
                 description.setRtime(System.currentTimeMillis());
                 byte[] bytes = serializer.serialize(description);
-                String path = pathForConsumer(description.getName(), description.getCode());
+                String path = pathForConsumer(description.getServiceName(), description.getInstanceCode());
 
                 final int MAX_TRIES = 2;
                 boolean isDone = false;
@@ -202,7 +202,7 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
                     }
                 }
 
-                consumers.put(description.getCode(), description);
+                consumers.put(description.getInstanceCode(), description);
 
                 return consumers.size();
             }
@@ -210,7 +210,7 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
 
         public int removeConsumer() {
             synchronized (consumers) {
-                consumers.remove(description.getCode());
+                consumers.remove(description.getInstanceCode());
 
                 return consumers.size();
             }
@@ -219,7 +219,7 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
         private void addProvider(ChildData childData, boolean onlyIfAbsent) {
             try {
                 String instanceId = ZKPaths.getNodeFromPath(childData.getPath());
-                ServiceDescription serviceInstance = serializer.deserialize(childData.getData());
+                ServiceInstance serviceInstance = serializer.deserialize(childData.getData());
                 if (onlyIfAbsent) {
                     providers.putIfAbsent(instanceId, serviceInstance);
                 } else {
@@ -232,8 +232,8 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
 
         public void destroy() {
             if (connectionState == ConnectionState.CONNECTED) {
-                for (ServiceDescription consumer : consumers.values()) {
-                    String path = pathForConsumer(consumer.getName(), consumer.getCode());
+                for (ServiceInstance consumer : consumers.values()) {
+                    String path = pathForConsumer(consumer.getServiceName(), consumer.getInstanceCode());
                     try {
                         client.delete().forPath(path);
                     } catch (Exception e) {
