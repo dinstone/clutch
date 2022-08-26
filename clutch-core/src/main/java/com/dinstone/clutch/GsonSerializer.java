@@ -13,32 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dinstone.clutch.consul;
+package com.dinstone.clutch;
 
-import com.dinstone.clutch.ServiceInstance;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
-public class ServiceDescriptionSerializer {
+public class GsonSerializer {
 
-    private final ObjectMapper mapper;
-
-    private final JavaType type;
-
-    public ServiceDescriptionSerializer() {
-        mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        type = mapper.getTypeFactory().constructType(ServiceInstance.class);
-    }
+    private final Gson gson = new Gson();
 
     public byte[] serialize(ServiceInstance service) throws Exception {
-        return mapper.writeValueAsBytes(service);
+        return gson.toJson(service).getBytes("utf-8");
     }
 
     public ServiceInstance deserialize(byte[] bytes) throws Exception {
-        return mapper.readValue(bytes, type);
+        return gson.fromJson(new String(bytes, "utf-8"), ServiceInstance.class);
     }
 
 }

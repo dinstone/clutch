@@ -33,6 +33,7 @@ public class ZookeeperServiceRegistryTest {
         try {
             registry.register(description);
 
+            System.out.println("started");
             System.in.read();
         } catch (Exception e) {
             e.printStackTrace();

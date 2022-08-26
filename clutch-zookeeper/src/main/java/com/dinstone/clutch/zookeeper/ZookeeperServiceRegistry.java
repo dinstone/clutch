@@ -27,6 +27,7 @@ import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 
+import com.dinstone.clutch.GsonSerializer;
 import com.dinstone.clutch.ServiceInstance;
 import com.dinstone.clutch.ServiceRegistry;
 import com.dinstone.loghub.Logger;
@@ -36,9 +37,9 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
 
     private static final Logger LOG = LoggerFactory.getLogger(ZookeeperServiceRegistry.class);
 
-    private final ServiceDescriptionSerializer serializer = new ServiceDescriptionSerializer();
-
     private final Map<String, ServiceInstance> services = new ConcurrentHashMap<>();
+
+    private final GsonSerializer serializer = new GsonSerializer();
 
     private volatile ConnectionState connectionState = ConnectionState.LOST;
 
@@ -126,7 +127,7 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
     }
 
     protected void internalRegister(ServiceInstance service) throws Exception {
-        service.setRtime(System.currentTimeMillis());
+        service.setRegistTime(System.currentTimeMillis());
         byte[] bytes = serializer.serialize(service);
         String path = pathForProvider(service.getServiceName(), service.getInstanceCode());
 

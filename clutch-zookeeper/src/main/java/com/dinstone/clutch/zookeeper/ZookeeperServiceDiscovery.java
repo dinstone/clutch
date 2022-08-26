@@ -30,6 +30,7 @@ import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 
+import com.dinstone.clutch.GsonSerializer;
 import com.dinstone.clutch.ServiceInstance;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
@@ -38,9 +39,9 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
 
     private static final Logger LOG = LoggerFactory.getLogger(ZookeeperServiceDiscovery.class);
 
-    private final ServiceDescriptionSerializer serializer = new ServiceDescriptionSerializer();
-
     private final ConcurrentHashMap<String, ServiceCache> serviceCacheMap = new ConcurrentHashMap<>();
+
+    private final GsonSerializer serializer = new GsonSerializer();
 
     private volatile ConnectionState connectionState = ConnectionState.LOST;
 
@@ -186,7 +187,7 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
                     return consumers.size();
                 }
 
-                description.setRtime(System.currentTimeMillis());
+                description.setRegistTime(System.currentTimeMillis());
                 byte[] bytes = serializer.serialize(description);
                 String path = pathForConsumer(description.getServiceName(), description.getInstanceCode());
 
@@ -265,9 +266,6 @@ public class ZookeeperServiceDiscovery implements com.dinstone.clutch.ServiceDis
             }
 
             case NODE_DELETED: {
-                if (providerPath.equals(data.getPath())) {
-                    return;
-                }
                 providers.remove(ZKPaths.getNodeFromPath(oldData.getPath()));
                 break;
             }

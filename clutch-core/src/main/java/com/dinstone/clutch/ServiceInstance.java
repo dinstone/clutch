@@ -46,7 +46,7 @@ public class ServiceInstance implements Serializable {
 
     private int port;
 
-    private long rtime;
+    private long registTime;
 
     private volatile InetSocketAddress address;
 
@@ -98,12 +98,12 @@ public class ServiceInstance implements Serializable {
         this.port = port;
     }
 
-    public long getRtime() {
-        return rtime;
+    public long getRegistTime() {
+        return registTime;
     }
 
-    public void setRtime(long rtime) {
-        this.rtime = rtime;
+    public void setRegistTime(long registTime) {
+        this.registTime = registTime;
     }
 
     public Map<String, Object> getAttributes() {
@@ -162,8 +162,8 @@ public class ServiceInstance implements Serializable {
     @Override
     public String toString() {
         return "ServiceInstance [instanceCode=" + instanceCode + ", endpointCode=" + endpointCode + ", serviceName="
-                + serviceName + ", serviceGroup=" + serviceGroup + ", host=" + host + ", port=" + port + ", rtime="
-                + rtime + ", address=" + address + "]";
+                + serviceName + ", serviceGroup=" + serviceGroup + ", host=" + host + ", port=" + port + ", registTime="
+                + registTime + ", address=" + address + "]";
     }
 
 }

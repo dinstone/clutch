@@ -43,7 +43,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery {
 
         private AtomicInteger reference = new AtomicInteger();
 
-        private ServiceDescriptionSerializer serializer = new ServiceDescriptionSerializer();
+        private ServiceInstanceSerializer serializer = new ServiceInstanceSerializer();
 
         private ConcurrentHashMap<String, ServiceInstance> providers = new ConcurrentHashMap<>();
 

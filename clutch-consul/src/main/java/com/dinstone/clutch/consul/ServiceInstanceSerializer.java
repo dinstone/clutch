@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dinstone.clutch.zookeeper;
+package com.dinstone.clutch.consul;
 
 import com.dinstone.clutch.ServiceInstance;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ServiceDescriptionSerializer {
+public class ServiceInstanceSerializer {
 
     private final ObjectMapper mapper;
 
     private final JavaType type;
 
-    public ServiceDescriptionSerializer() {
+    public ServiceInstanceSerializer() {
         mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 

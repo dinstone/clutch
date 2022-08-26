@@ -41,7 +41,7 @@ public class ConsulServiceRegistry implements ServiceRegistry {
 
     private Map<String, ScheduledFuture<?>> serviceMap = new ConcurrentHashMap<>();
 
-    private ServiceDescriptionSerializer serializer = new ServiceDescriptionSerializer();
+    private ServiceInstanceSerializer serializer = new ServiceInstanceSerializer();
 
     private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
 

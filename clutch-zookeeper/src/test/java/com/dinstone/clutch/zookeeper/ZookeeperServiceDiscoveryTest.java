@@ -55,11 +55,11 @@ public class ZookeeperServiceDiscoveryTest {
                     for (ServiceInstance psd : plist) {
                         LOG.info(psd);
                     }
+                    Thread.sleep(2000);
                 } else {
                     LOG.info("empty");
+                    Thread.sleep(1000);
                 }
-
-                Thread.sleep(30);
             }
         } catch (Exception e) {
             e.printStackTrace();
