@@ -8,7 +8,7 @@ public class GsonSerializerTest {
 
     @Test
     public void testSerialize() throws Exception {
-        GsonSerializer s = new GsonSerializer();
+        ServiceInstanceSerializer s = new ServiceInstanceSerializer();
 
         ServiceInstance description = new ServiceInstance();
         String serviceName = "TestService";

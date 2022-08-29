@@ -27,7 +27,7 @@ import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 
-import com.dinstone.clutch.GsonSerializer;
+import com.dinstone.clutch.ServiceInstanceSerializer;
 import com.dinstone.clutch.ServiceInstance;
 import com.dinstone.clutch.ServiceRegistry;
 import com.dinstone.loghub.Logger;
@@ -39,7 +39,7 @@ public class ZookeeperServiceRegistry implements ServiceRegistry {
 
     private final Map<String, ServiceInstance> services = new ConcurrentHashMap<>();
 
-    private final GsonSerializer serializer = new GsonSerializer();
+    private final ServiceInstanceSerializer serializer = new ServiceInstanceSerializer();
 
     private volatile ConnectionState connectionState = ConnectionState.LOST;
 

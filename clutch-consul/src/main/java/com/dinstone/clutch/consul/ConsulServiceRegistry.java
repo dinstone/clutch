@@ -25,6 +25,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import com.dinstone.clutch.ServiceInstance;
+import com.dinstone.clutch.ServiceInstanceSerializer;
 import com.dinstone.clutch.ServiceRegistry;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;

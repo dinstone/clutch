@@ -17,7 +17,7 @@ package com.dinstone.clutch;
 
 import com.google.gson.Gson;
 
-public class GsonSerializer {
+public class ServiceInstanceSerializer {
 
     private final Gson gson = new Gson();
 

@@ -25,8 +25,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.dinstone.clutch.ServiceInstance;
 import com.dinstone.clutch.ServiceDiscovery;
+import com.dinstone.clutch.ServiceInstance;
+import com.dinstone.clutch.ServiceInstanceSerializer;
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
