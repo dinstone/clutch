@@ -34,7 +34,10 @@ public class ZookeeperServiceRegistryTest {
             registry.register(description);
 
             System.out.println("started");
+            
             System.in.read();
+            
+            registry.deregister(description);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
